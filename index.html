@@ -1,345 +1,96 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-    <meta name="description" content="The Lost Peperium Pepes" />
-    <title>Peperium migrate</title>
-    <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css" rel="stylesheet" />
-    <link href="css/styles.css" rel="stylesheet" />
-    
-    <style type="text/css">
-        .bg-gray {
-            --bs-bg-opacity: 1;
-            background-color: var(--bs-gray-500) !important;
-        }
+<html lang="en" data-bs-theme="dark">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="Peperium migrate / wrap page" />
+        <title>Peperium migrate / wrap page</title>
+
+        <link href="css/bootstrap.min.css" rel="stylesheet" />
+        <link href="css/styles.css" rel="stylesheet" />
         
-        .bd-callout {
-            padding: 1.25rem;
-            margin-top: 1.25rem;
-            margin-bottom: 1.25rem;
-            border: 1px solid #e9ecef;
-            border-left-width: .25rem;
-            border-radius: .25rem
-        }
-        
-        .bd-callout h4 {
-            margin-bottom: .25rem
-        }
-        
-        .bd-callout p:last-child {
-            margin-bottom: 0
-        }
-        
-        .bd-callout code {
-            border-radius: .25rem
-        }
-        
-        .bd-callout+.bd-callout {
-            margin-top: -.25rem
-        }
-        
-        .bd-callout-info {
-            border-left-color: #5bc0de
-        }
-        
-        .bd-callout-warning {
-            border-left-color: #f0ad4e
-        }
-        
-        .bd-callout-danger {
-            border-left-color: #d9534f
-        }
-    </style>
-    
-    <script src="./ethers-5.6.umd.min.js"></script>
-</head>
-<body>
-    <div class="container pt-3">
-        <h2>Peperium migrate</h2>
-        
-        <p>Unfortunately I (Obi) screwed up a tiny bit of metadata (blank JSON file for PEPEGOLD and a wrong IPFS url for PBJCAT), so I had to deploy a new wrapper..</p>
-        <p>I'm very sorry but it is what it is.. 😥 🤷‍♂️</p>
-        <p>This page was designed to make sure it's easy to migrate your Peperium assets from the old to the new wrapper.. You can start with connecting your wallet through the button below.</p>
-        <p>If you're done, reach out to me with the tx ids and I will pay for all your transaction costs, that's the least I can do..</p>
-        
-        <button id="btn-connect" class="btn btn-primary">Connect</button>
-        
-    </div>
-    
-    <div class="container bd-content mt-2">
-        <div class="bd-callout bd-callout-info">
-            <em>
-                <span id="info-connect">Not connected</span>
-            </em>
+        <script src="js/ethers-5.6.umd.min.js"></script>
+    </head>
+    <body>
+        <div class="container-fluid bg-light text-dark py-5" data-bs-theme="light">
+            <div class="container">
+                <h2>Peperium migrate / wrap page</h2>
+                
+                <p>
+                    Welcome to the migrate / wrap page. If you have old, unwrapped Peperium cards, or if you have Old wrapper balances (either you wrapped to it or bought on a marketplace) then you can use this page to move your precious Peperium assets to the official wrapper.<br />
+                    If you think something isn't right with the info on this webpage, reach out to Obi in <a href="https://discord.gg/UdJET9ZNvf" target="_blank">the Peperium Discord</a>.
+                </p>
+                
+                <div class="bd-callout bd-callout-info mb-0">
+                    <em>
+                        <div id="info-connect">Not connected</div>
+                    </em>
+                </div>
+                
+                <button id="btn-connect" class="btn btn-primary mt-3" style="display: none;">Connect your wallet</button>
+            </div>
         </div>
-    </div>
-    
-    <div id="container-no-balances" class="container" style="display: none;">
-        I'm sorry, but at this moment the migrate script can't find any wrapped balances for your address. If you think this is a mistake, reach out to Obi
-    </div>
-    
-    <div id="container-balances" class="container" style="display: none;">
-        <table id="table-balances" class="table table-striped"></table>
         
-        <p>It looks like you have some balances in the old wrapper, click the button to proceed the migration to the new wrapper</p>
-        
-        <button id="btn-migrate" class="btn btn-primary">Migrate</button>
-    </div>
-    
-    <script>
-        const { ethereum } = window;
-        
-        const oldWrapperAddr = '0xFAe57936702a445A91Efb5fA1274E7B5F43EC641'
-        const newWrapperAddr = '0xFe880206214856F984D4f64Fc89c26681DcA15a2'
-        
-        const erc20Abi = [{"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_spender","type":"address"},{"name":"_value","type":"uint256"}],"name":"approve","outputs":[{"name":"success","type":"bool"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"totalSupply","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_from","type":"address"},{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transferFrom","outputs":[{"name":"success","type":"bool"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"decimals","outputs":[{"name":"","type":"uint8"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"standard","outputs":[{"name":"","type":"string"}],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"balanceOf","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"description","outputs":[{"name":"","type":"string"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"target","type":"address"},{"name":"mintedAmount","type":"uint256"}],"name":"mintToken","outputs":[],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"ipfs_hash","outputs":[{"name":"","type":"string"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"desc","type":"string"}],"name":"setDescription","outputs":[],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"symbol","outputs":[{"name":"","type":"string"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"isLocked","outputs":[{"name":"","type":"bool"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transfer","outputs":[],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_spender","type":"address"},{"name":"_value","type":"uint256"},{"name":"_extraData","type":"bytes"}],"name":"approveAndCall","outputs":[{"name":"success","type":"bool"}],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"},{"name":"","type":"address"}],"name":"allowance","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"payable":false,"type":"function"},{"constant":false,"inputs":[],"name":"lock","outputs":[],"payable":false,"type":"function"},{"inputs":[{"name":"initialSupply","type":"uint256"},{"name":"tokenName","type":"string"},{"name":"tokenSymbol","type":"string"},{"name":"tokenDescription","type":"string"},{"name":"ipfsHash","type":"string"}],"payable":false,"type":"constructor"},{"payable":false,"type":"fallback"},{"anonymous":false,"inputs":[{"indexed":true,"name":"from","type":"address"},{"indexed":true,"name":"to","type":"address"},{"indexed":false,"name":"value","type":"uint256"}],"name":"Transfer","type":"event"}]
-        const oldWrapperAbi = [{"inputs":[],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"_owner","type":"address"},{"indexed":true,"internalType":"address","name":"_operator","type":"address"},{"indexed":false,"internalType":"bool","name":"_approved","type":"bool"}],"name":"ApprovalForAll","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"_operator","type":"address"},{"indexed":true,"internalType":"address","name":"_from","type":"address"},{"indexed":true,"internalType":"address","name":"_to","type":"address"},{"indexed":false,"internalType":"uint256[]","name":"_ids","type":"uint256[]"},{"indexed":false,"internalType":"uint256[]","name":"_values","type":"uint256[]"}],"name":"TransferBatch","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"_operator","type":"address"},{"indexed":true,"internalType":"address","name":"_from","type":"address"},{"indexed":true,"internalType":"address","name":"_to","type":"address"},{"indexed":false,"internalType":"uint256","name":"_id","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"_value","type":"uint256"}],"name":"TransferSingle","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"string","name":"_value","type":"string"},{"indexed":true,"internalType":"uint256","name":"_id","type":"uint256"}],"name":"URI","type":"event"},{"constant":true,"inputs":[{"internalType":"address","name":"_owner","type":"address"},{"internalType":"uint256","name":"_id","type":"uint256"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"internalType":"address[]","name":"_owners","type":"address[]"},{"internalType":"uint256[]","name":"_ids","type":"uint256[]"}],"name":"balanceOfBatch","outputs":[{"internalType":"uint256[]","name":"","type":"uint256[]"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"contracts","outputs":[{"internalType":"address","name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"internalType":"uint256","name":"_id","type":"uint256"}],"name":"exists","outputs":[{"internalType":"bool","name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"internalType":"address","name":"_owner","type":"address"},{"internalType":"address","name":"_operator","type":"address"}],"name":"isApprovedForAll","outputs":[{"internalType":"bool","name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"isOwner","outputs":[{"internalType":"bool","name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"metadatas","outputs":[{"internalType":"string","name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"internalType":"address","name":"_from","type":"address"},{"internalType":"address","name":"_to","type":"address"},{"internalType":"uint256[]","name":"_ids","type":"uint256[]"},{"internalType":"uint256[]","name":"_values","type":"uint256[]"},{"internalType":"bytes","name":"_data","type":"bytes"}],"name":"safeBatchTransferFrom","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"internalType":"address","name":"_from","type":"address"},{"internalType":"address","name":"_to","type":"address"},{"internalType":"uint256","name":"_id","type":"uint256"},{"internalType":"uint256","name":"_value","type":"uint256"},{"internalType":"bytes","name":"_data","type":"bytes"}],"name":"safeTransferFrom","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"internalType":"address","name":"_operator","type":"address"},{"internalType":"bool","name":"_approved","type":"bool"}],"name":"setApprovalForAll","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"internalType":"bytes4","name":"_interfaceId","type":"bytes4"}],"name":"supportsInterface","outputs":[{"internalType":"bool","name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"internalType":"uint256","name":"_id","type":"uint256"},{"internalType":"uint256","name":"_quantity","type":"uint256"}],"name":"unwrap","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"internalType":"uint256","name":"_id","type":"uint256"}],"name":"uri","outputs":[{"internalType":"string","name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"internalType":"uint256","name":"_id","type":"uint256"},{"internalType":"uint256","name":"_quantity","type":"uint256"}],"name":"wrap","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"}]
-        const newWrapperAbi = [{"inputs":[],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"_owner","type":"address"},{"indexed":true,"internalType":"address","name":"_operator","type":"address"},{"indexed":false,"internalType":"bool","name":"_approved","type":"bool"}],"name":"ApprovalForAll","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"_operator","type":"address"},{"indexed":true,"internalType":"address","name":"_from","type":"address"},{"indexed":true,"internalType":"address","name":"_to","type":"address"},{"indexed":false,"internalType":"uint256[]","name":"_ids","type":"uint256[]"},{"indexed":false,"internalType":"uint256[]","name":"_values","type":"uint256[]"}],"name":"TransferBatch","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"_operator","type":"address"},{"indexed":true,"internalType":"address","name":"_from","type":"address"},{"indexed":true,"internalType":"address","name":"_to","type":"address"},{"indexed":false,"internalType":"uint256","name":"_id","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"_value","type":"uint256"}],"name":"TransferSingle","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"string","name":"_value","type":"string"},{"indexed":true,"internalType":"uint256","name":"_id","type":"uint256"}],"name":"URI","type":"event"},{"constant":true,"inputs":[{"internalType":"address","name":"_owner","type":"address"},{"internalType":"uint256","name":"_id","type":"uint256"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"internalType":"address[]","name":"_owners","type":"address[]"},{"internalType":"uint256[]","name":"_ids","type":"uint256[]"}],"name":"balanceOfBatch","outputs":[{"internalType":"uint256[]","name":"","type":"uint256[]"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"contracts","outputs":[{"internalType":"address","name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"internalType":"uint256","name":"_id","type":"uint256"}],"name":"exists","outputs":[{"internalType":"bool","name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"internalType":"address","name":"_owner","type":"address"},{"internalType":"address","name":"_operator","type":"address"}],"name":"isApprovedForAll","outputs":[{"internalType":"bool","name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"isOwner","outputs":[{"internalType":"bool","name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"metadatas","outputs":[{"internalType":"string","name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"internalType":"address","name":"_from","type":"address"},{"internalType":"address","name":"_to","type":"address"},{"internalType":"uint256[]","name":"_ids","type":"uint256[]"},{"internalType":"uint256[]","name":"_values","type":"uint256[]"},{"internalType":"bytes","name":"_data","type":"bytes"}],"name":"safeBatchTransferFrom","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"internalType":"address","name":"_from","type":"address"},{"internalType":"address","name":"_to","type":"address"},{"internalType":"uint256","name":"_id","type":"uint256"},{"internalType":"uint256","name":"_value","type":"uint256"},{"internalType":"bytes","name":"_data","type":"bytes"}],"name":"safeTransferFrom","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"internalType":"address","name":"_operator","type":"address"},{"internalType":"bool","name":"_approved","type":"bool"}],"name":"setApprovalForAll","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"internalType":"bytes4","name":"_interfaceId","type":"bytes4"}],"name":"supportsInterface","outputs":[{"internalType":"bool","name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"internalType":"uint256","name":"_id","type":"uint256"},{"internalType":"uint256","name":"_quantity","type":"uint256"}],"name":"unwrap","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"internalType":"uint256","name":"_id","type":"uint256"}],"name":"uri","outputs":[{"internalType":"string","name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"internalType":"uint256","name":"_id","type":"uint256"},{"internalType":"uint256","name":"_quantity","type":"uint256"}],"name":"wrap","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"}]
-        
-        let hasBalances = false
-        let provider = false
-        let signer = false
-        
-        const allowanceAmount = 2500000000
-        const cards = [
-        'KFPEPE',
-        'PEPESTREET',
-        'ZENPEPE',
-        'PEPRESSIONISM',
-        'PEPEBANKSY',
-        'MONAPEPE',
-        'LORDRARE',
-        'BASEBALLPEPE',
-        'BATPEPE',
-        'HOTDOGPEPE',
-        'KINGRARE',
-        'ACCEPTRARE',
-        'NEVERENDINGPEPE',
-        'PEPEGOD',
-        'PEPEGOLD',
-        'NEWPEPE',
-        'PEPETTE',
-        'VAPORPEPE',
-        'PEPESTENCIL',
-        'GlitchPepe',
-        'PEPERIUMCLASSIC',
-        'CHILLPEPE',
-        'RUINSOFPEPE',
-        'GIGERPEPECITY',
-        'PEPEZEUSLIGHT',
-        'CRIMEANDPEPESHMENT',
-        'PEPENEMSTEAK',
-        'RPALPHASTIK',
-        'UNDEADPEPE',
-        'MHV',
-        'PBJCAT',
-        'TAOWARARE'
-        ]
-        const contracts = [
-        '0x648445e48093d999966375b30186D433fEF9c364',
-        '0x51b41e61B654EA852679E374171F08f35119e255',
-        '0xA3832b169Ac40c23d85eEb1D0c2e51FCAc5df5De',
-        '0x8B990d8bBB502eaa09AE4bAdEb8ec85Acbe7FB66',
-        '0x57E62ee19ffd8f73CD978282a45a1e5ab7341c96',
-        '0xA87c5dcC2e24FACe553cFC0c04d8E22c94c117a2',
-        '0xEd01ca51723C0F9ebc167e8E382A7cfA73735077',
-        '0x99523add649D16e69E2eE913baC893e69e926444',
-        '0x9F0bf0e983B227b2c026d4655B9fDF6cd435A66E',
-        '0x8F94BC777CB8B6876Cd2410Da3a6F796733212f5',
-        '0x97E5cC2F56E08C6338AC7907E1073a8049D4bC60',
-        '0x20Cd103D4Ed989338E122Eb069d9cC51f497151E',
-        '0xD3Fab082012b7482244379B77d9548495A029F54',
-        '0x38A8E6f911aB6163b663f7fa414af03c7Ab4b35b',
-        '0x08aAB3C173639a37C7E5254C2F1C153c3e3444B2',
-        '0x76330651533B02B89c563352062265663E410923',
-        '0x3aC136f428889E0E8d88B79940dEA547Eb7Ca00D',
-        '0x2523f621ce57E0503c114FbD0181B4c385165513',
-        '0x5921F43985a027ba74EE110b77DcE09B96De943E',
-        '0x60E762fA4FCB2bA472B055D64fEbBFccA000ED6C',
-        '0x6160A19EC62392ADf43Cc22c89C0193432216417',
-        '0x4B5CF00AE4D5b1a8DC4E0D81f28e373aAdbe59d3',
-        '0xbA7101b0aaf0F1cF655240ed519C4EcAc3394022',
-        '0xDaa9CecfE002536574D7958c50950F8f545a9Bd4',
-        '0xF10e9228221777920d413E74Aa40a54b33886Ac4',
-        '0x11266bF3498FaBe08707C16F3BA7fbF526Cf9f98',
-        '0xa9DDec7e4B31D63Aa9fEaf77190b242070483B24',
-        '0x5443F7D80875AFD18737F2A5322161582373cE5e',
-        '0x0273b0846a9877af88b3F080fB963d8f51679996',
-        '0xC8a1464d5936C9dcB033dAA7fc198215E7538292',
-        '0x7469580d483e9832B9C68676b5EA17141bE97df2',
-        '0x95907077585b09068A0d8d1185AAB872ec1836c0'
-        ]
-        
-        let contractsWithBalance = []
-        let cardIds = []
-        let contractBalances = []
-        
-        function setConnected(isConnected, accts) {
-            document.querySelector('#info-connect').innerHTML = `Connected to <strong>${accts[0]}</strong>`
-            
-            document.querySelector('#btn-connect').style.display = isConnected ? 'none' : 'block'
-        }
-        
-        async function unwrapOldWrapperTokens() {
-            console.log("unwrapOldWrapperTokens");
-            
-            document.querySelector('#btn-migrate').style.display = 'none'
+        <div class="container-fluid py-5">
+            <div class="container">
+                <h3>Old wrapper balances</h3>
 
-            try {
-                const accts = await provider.listAccounts()
-                const userAddr = accts[0]
-                const oldWrapperContract = new ethers.Contract(oldWrapperAddr, oldWrapperAbi, signer)
-                const newWrapperContract = new ethers.Contract(newWrapperAddr, newWrapperAbi, signer)
+                <div id="container-no-balances" style="display: none;">
+                    No old wrapper balances found for this address.
+                </div>
                 
-                let totalTxCount = 0;
-                
-                contractsWithBalance.forEach(async (value, index) => {
-                    const cardId = cardIds[index]
-                    const contract = value
+                <div id="container-balances" style="display: none;">
+                    <p>It looks like you have some balances in the old wrapper, click the button to proceed the migration to the new wrapper</p>
+
+                    <div class="table-responsive">
+                        <table id="table-old-wrapper-balances" class="table table-striped"></table>
+                    </div>
                     
-                    // check if user has approval for erc20
-                    const erc20Contract = new ethers.Contract(value, erc20Abi, signer)
-                    const allowanceToSpend = parseInt(await erc20Contract.allowance(userAddr, newWrapperAddr), 10)
-                    const balance = contractBalances[index]
-                    
-                    if(allowanceToSpend === 0) {
-                        totalTxCount++
-                    } else {
-                        console.log(`current allowance for ${cardId}: ${allowanceToSpend}`)
-                    }
-                    
-                    // Step 1: unwrap from old wrapper
-                    const unwrapResult = await oldWrapperContract.unwrap(cardId, balance)
-                    const unwrapReceipt = await unwrapResult.wait()
-                    console.log(`unwrapReceipt: ${JSON.stringify(unwrapReceipt)}`)
-
-                    // Step 2: approve erc20 to new wrapper
-                    const approvalResult = await erc20Contract.approve(newWrapperAddr, allowanceAmount)
-                    const approvalReceipt = await approvalResult.wait()
-                    console.log(`approvalReceipt: ${JSON.stringify(approvalReceipt)}`)
-
-                    // Step 3: wrap to new wrapper
-                    const wrapResult = await newWrapperContract.wrap(cardId, balance)
-                    const wrapReceipt = await wrapResult.wait()
-                    console.log(`wrapReceipt: ${JSON.stringify(wrapReceipt)}`)
-
-                    populateBalances()
-
-                    document.querySelector('#container-balances').style.display = 'none'
-                    document.querySelector('#container-no-balances').style.display = 'block'
-                })
-            } catch (e) {
-                if (e.code) {
-                    console.warn("Received Metamask errorcode: " + e.code);
-
-                    if (e.code == "ACTION_REJECTED") {
-                        console.log("Metamask error: User denied transaction signature");
-                    } else {
-                        console.log("Metamask error " + e.code);
-                    }
-                } else {
-                    console.log("Unexpected error while executing transaction. Contact the Curio Discord for help.");
-                }
-                // rethrow for logging
-                throw e;
-            } finally {
-                populateBalances();
-            }
-        }
-
-        async function migrate() {
-            unwrapOldWrapperTokens()
-        }
+                    <button id="btn-migrate" class="btn btn-primary">Migrate all</button>
+                </div>
+            </div>
+        </div>
         
-        async function populateBalances() {
-            console.log("populateBalances");
-            
-            accts = await provider.listAccounts();
-            const userAddr = accts[0];
-            
-            const oldWrapperContract = await new ethers.Contract(oldWrapperAddr, oldWrapperAbi, provider);
-            const cardIdArr = [...Array(32).keys(), 99].slice(1,33)
-            const userAddrArr = [...Array(32).fill(userAddr, 0, 32)]
-            
-            oldWrapperContract.balanceOfBatch(userAddrArr, cardIdArr).then(balances => {
-                let tableHTML = `
-                <thead>
-                    <tr>
-                        <th>Card</th>
-                        <th>Quantity</th>
-                        <th>ERC20 contract</th>
-                    </tr>
-                </thead>
-                <tbody>`
+        <div class="container-fluid bg-light text-dark py-5" data-bs-theme="light">
+            <div class="container">            
+                <h3>Unwrapped balances</h3>
+
+                <div id="unwrapped-no-balances" style="display: none;">
+                    No unwrapped balances found for this address.
+                </div>
+
+                <div id="unwrapped-balances" style="display: none;">
+                    <p>It looks like you have some unwrapped balances, click the button to proceed the wrap them</p>
+
+                    <div class="table-responsive">
+                        <table id="table-unwrapped-balances" class="table table-striped"></table>
+                    </div>
+                                        
+                    <button id="btn-wrap" class="btn btn-primary">Wrap all</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="container-fluid py-5">
+            <div class="container">
+                <h3>Wrapped balances</h3>
+
+                <div id="wrapped-no-balances" style="display: none;">
+                    No wrapped balances found for this address.
+                </div>
+
+                <div id="wrapped-balances" style="display: none;">
+                    <p>It looks like you have some wrapped balances, click the button to proceed the unwrap them</p>
+
+                    <div class="table-responsive">
+                        <table id="table-wrapped-balances" class="table table-striped"></table>
+                    </div>
                     
-                    balances.forEach((val, index) => {
-                        const amount = parseInt(val, 10)
-                        const contract = contracts[index]
-                        
-                        if(amount > 0) {
-                            hasBalances = true
-                            contractsWithBalance.push(contract)
-                            contractBalances.push(amount)
-                            cardIds.push(cardIdArr[index])
-                            tableHTML += `
-                            <tr>
-                                <td>${cards[index]}</td>
-                                <td>${amount}</td>
-                                <td>${contract}</td>
-                            </tr>`    
-                        }
-                    })
-                    
-                    tableHTML += `</tbody>`
-                    
-                    if(hasBalances) {
-                        document.querySelector('#container-balances').style.display = 'block'
-                        document.querySelector('#container-no-balances').style.display = 'none'
-                        document.querySelector('#table-balances').innerHTML = tableHTML
-                        document.querySelector('#btn-migrate').addEventListener('click', migrate)
-                    } else {
-                        document.querySelector('#container-balances').style.display = 'none'
-                        document.querySelector('#container-no-balances').style.display = 'block'
-                    }
-                });
-            }
-            
-            async function connectWallet() {
-                console.log("connectWallet");
-                
-                await ethereum.request({
-                    method: 'eth_requestAccounts'
-                });
-                
-                accts = await provider.listAccounts();
-                
-                setConnected(true, accts);
-                populateBalances()
-            }
-            
-            if (ethereum) {
-                provider = new ethers.providers.Web3Provider(ethereum);
-                signer = provider.getSigner();
-            }
-            
-            if (!provider) {
-                console.error("Your browser is not web3 enabled.");
-            }
-            
-            provider.listAccounts().then(accts => {
-                if (accts && accts.length > 0) {
-                    // already connected
-                    console.log("already connected; accts: " + accts);
-                    setConnected(true, accts);
-                    populateBalances();
-                } else {
-                    console.log('Not connected')
-                }
-            });
-            
-            document.querySelector('#btn-connect').addEventListener('click', connectWallet)
-        </script>
+                    <button id="btn-unwrap" class="btn btn-primary">Unwrap all</button>
+                </div>
+            </div>  
+        </div>  
+
+        <script src="js/index.js"></script>
     </body>
-    </html>
+</html>
