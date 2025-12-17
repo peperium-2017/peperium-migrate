@@ -1,5 +1,3 @@
-const { ethereum } = window;
-
 const oldWrapperAddr = '0xFAe57936702a445A91Efb5fA1274E7B5F43EC641'
 const wrapperAddr = '0xFe880206214856F984D4f64Fc89c26681DcA15a2'
 
@@ -628,7 +626,7 @@ async function populateWrappedBalances(userAddr) {
 async function connectWallet() {
     console.log("connectWallet");
     
-    await ethereum.request({
+    await window.ethereum.request({
         method: 'eth_requestAccounts'
     });
     
@@ -638,8 +636,8 @@ async function connectWallet() {
     setConnected(true, userAddr);
 }
 
-if (ethereum) {
-    provider = new ethers.providers.Web3Provider(ethereum);
+if (window.ethereum) {
+    provider = new ethers.providers.Web3Provider(window.ethereum);
     signer = provider.getSigner();
 }
 
